@@ -19,13 +19,8 @@ function updateSeatsDisplay() {
         seatElement.textContent = seat.available ? 'Seat ' + (index + 1) : 'Reserved';
         seatElement.onclick = () => {
             if (seat.available) {
-                // Simulate a time reservation by selecting a time slot (e.g., morning, afternoon, evening)
-                const timeSlot = prompt(`Select a time slot for Seat ${index + 1} (e.g., morning, afternoon, evening):`);
-                if (timeSlot) {
-                    makeReservation("Guest", index, timeSlot); // Replace "Guest" with actual guest name input
-                    seatElement.className = 'seat reserved';
-                    seatElement.textContent = `Reserved (${timeSlot})`;
-                }
+                // Prompt user to select a specific time after choosing a seat
+                showTimeSelection(index);
             } else {
                 cancelReservation(index);
                 seatElement.className = 'seat';
@@ -36,6 +31,33 @@ function updateSeatsDisplay() {
     });
 }
 
+// Function to show time selection options after selecting a seat
+function showTimeSelection(seatIndex) {
+    const timeDropdown = document.createElement('select');
+    timeDropdown.className = 'time-dropdown';
+    timeDropdown.innerHTML = `
+        <option value="09:00">09:00 AM</option>
+        <option value="12:00">12:00 PM</option>
+        <option value="15:00">03:00 PM</option>
+        <option value="18:00">06:00 PM</option>
+        <option value="21:00">09:00 PM</option>
+    `;
+    const confirmButton = document.createElement('button');
+    confirmButton.textContent = 'Confirm';
+    confirmButton.onclick = () => {
+        const selectedTime = timeDropdown.value;
+        if (selectedTime) {
+            makeReservation("Guest", seatIndex, selectedTime); // Replace "Guest" with actual guest name input
+            updateSeatsDisplay(); // Update seats display after reservation
+            document.body.removeChild(timeDropdown); // Remove dropdown after reservation
+            document.body.removeChild(confirmButton); // Remove confirm button after reservation
+        }
+    };
+
+    document.body.appendChild(timeDropdown);
+    document.body.appendChild(confirmButton);
+}
+
 // Function to make a reservation
 function makeReservation(name, seatIndex, timeSlot) {
     seats[seatIndex].available = false;
@@ -43,8 +65,7 @@ function makeReservation(name, seatIndex, timeSlot) {
         name: name,
         timeSlot: timeSlot
     };
-    console.log(`Reservation successful! ${name} has reserved Seat ${seatIndex + 1} (${timeSlot}).`);
-    updateSeatsDisplay();
+    console.log(`Reservation successful! ${name} has reserved Seat ${seatIndex + 1} at ${timeSlot}.`);
 }
 
 // Function to cancel a reservation
@@ -52,7 +73,6 @@ function cancelReservation(seatIndex) {
     seats[seatIndex].available = true;
     seats[seatIndex].reservation = null;
     console.log(`Reservation for Seat ${seatIndex + 1} cancelled.`);
-    updateSeatsDisplay();
 }
 
 // Initial update of seats display
