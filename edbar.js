@@ -48,6 +48,7 @@ function showTimeSelection(seatIndex) {
         const selectedTime = timeDropdown.value;
         if (selectedTime) {
             makeReservation("Guest", seatIndex, selectedTime); // Replace "Guest" with actual guest name input
+            sendReservationToBackend("Guest", seatIndex, selectedTime); // Send reservation data to backend
             updateSeatsDisplay(); // Update seats display after reservation
             document.body.removeChild(timeDropdown); // Remove dropdown after reservation
             document.body.removeChild(confirmButton); // Remove confirm button after reservation
@@ -58,7 +59,7 @@ function showTimeSelection(seatIndex) {
     document.body.appendChild(confirmButton);
 }
 
-// Function to make a reservation
+// Function to make a reservation (local frontend storage)
 function makeReservation(name, seatIndex, timeSlot) {
     seats[seatIndex].available = false;
     seats[seatIndex].reservation = {
@@ -68,11 +69,38 @@ function makeReservation(name, seatIndex, timeSlot) {
     console.log(`Reservation successful! ${name} has reserved Seat ${seatIndex + 1} at ${timeSlot}.`);
 }
 
-// Function to cancel a reservation
+// Function to cancel a reservation (local frontend storage)
 function cancelReservation(seatIndex) {
     seats[seatIndex].available = true;
     seats[seatIndex].reservation = null;
     console.log(`Reservation for Seat ${seatIndex + 1} cancelled.`);
+}
+
+// Function to send reservation data to backend server
+function sendReservationToBackend(name, seatIndex, timeSlot) {
+    fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            seatIndex: seatIndex,
+            timeSlot: timeSlot
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to send reservation data to backend.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Reservation sent to backend:', data);
+    })
+    .catch(error => {
+        console.error('Error sending reservation data to backend:', error);
+    });
 }
 
 // Initial update of seats display
